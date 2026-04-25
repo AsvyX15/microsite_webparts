@@ -16,17 +16,17 @@
     --ink-soft: #3a4257;
     --muted: #6b7388;
     --line: #e4eaee;
- 
+
     /* Blue palette derived from #00518E */
     --blue-light: #a8c8e8;
     --blue-mid: #4a7db5;
     --blue: #00518E;          /* primary brand */
     --blue-deep: #003d6b;
     --blue-ink: #002b4d;
- 
+
     --tag-bg: #e6f0fa;
     --tag-ink: #003d6b;
- 
+
     --shadow: 0 1px 2px rgba(12,18,32,.04), 0 12px 32px -12px rgba(0, 81, 142, .22);
   }
   *{box-sizing:border-box}
@@ -37,10 +37,68 @@
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
     line-height: 1.5;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* === Animated background orbs === */
+  .bg-orbs {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .35;
+    animation: floatOrb 20s ease-in-out infinite;
+  }
+  .orb.o1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #00518E 0%, transparent 70%);
+    top: -150px; left: -150px;
+  }
+  .orb.o2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #4a7db5 0%, transparent 70%);
+    top: 30%; right: -100px;
+    animation-delay: -7s;
+    animation-duration: 25s;
+  }
+  .orb.o3 {
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, #a8c8e8 0%, transparent 70%);
+    bottom: -100px; left: 30%;
+    animation-delay: -14s;
+    animation-duration: 22s;
+  }
+  @keyframes floatOrb {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(60px, -40px) scale(1.1); }
+    66% { transform: translate(-40px, 50px) scale(.95); }
+  }
+
+  /* === Sparkles === */
+  .sparkle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1;
+    width: 14px; height: 14px;
+    color: #00518E;
+    animation: sparkleAnim 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 6px rgba(0, 81, 142, .6));
+  }
+  .sparkle svg { width: 100%; height: 100%; }
+  @keyframes sparkleAnim {
+    0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1) rotate(180deg); }
   }
   a{color: inherit; text-decoration: none}
   img{max-width: 100%; display:block}
- 
+
   .shell{
     max-width: 1200px;
     margin: 0 auto;
@@ -48,7 +106,7 @@
     position: relative;
     z-index: 1;
   }
- 
+
   /* Section headers */
   .section{padding: 64px 0 40px}
   .section-head{
@@ -61,7 +119,19 @@
     margin: 0;
     color: var(--ink);
   }
-  .section-head h2 .soft{color: var(--blue); font-weight: 800}
+  .section-head h2 .soft{
+    background: linear-gradient(90deg, #00518E 0%, #4a7db5 50%, #00518E 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    animation: shimmerText 3s ease-in-out infinite;
+  }
+  @keyframes shimmerText {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
   .section-head .sub{color: var(--muted); font-size: 14px; margin-top: 8px}
   .season-pill{
     display:inline-flex; align-items:center; gap: 8px;
@@ -73,7 +143,7 @@
     letter-spacing: .06em;
   }
   .season-pill::before{content:''; width:6px; height:6px; background: var(--blue); border-radius: 50%}
- 
+
   /* Episode grid */
   .ep-grid{
     display: grid;
@@ -87,18 +157,43 @@
     border-radius: 14px;
     padding: 18px;
     display:flex; flex-direction: column;
-    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    transition: transform .3s cubic-bezier(.4, 0, .2, 1), box-shadow .3s ease, border-color .3s ease;
     cursor: pointer;
     position: relative;
+    overflow: hidden;
+  }
+  /* Shimmer sweep on hover */
+  .ep-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(0, 81, 142, .08),
+      transparent
+    );
+    transition: left .8s ease;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .ep-card:hover::before {
+    left: 100%;
   }
   .ep-card:hover{
-    transform: translateY(-4px);
-    box-shadow: var(--shadow);
-    border-color: #b8d4ec;
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: var(--shadow), 0 20px 40px -20px rgba(0, 81, 142, .35);
+    border-color: var(--blue);
   }
   .ep-card.active{
     border-color: var(--blue);
     box-shadow: 0 0 0 3px rgba(0, 81, 142, .15), var(--shadow);
+    animation: activePulse 2.5s ease-in-out infinite;
+  }
+  @keyframes activePulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(0, 81, 142, .15), var(--shadow); }
+    50% { box-shadow: 0 0 0 6px rgba(0, 81, 142, .08), 0 20px 40px -20px rgba(0, 81, 142, .45); }
   }
   .ep-art{
     aspect-ratio: 4/3;
@@ -107,6 +202,36 @@
     position: relative;
     margin-bottom: 14px;
     display:flex; align-items:center; justify-content:center;
+  }
+  /* Rotating shine effect on art */
+  .ep-art::after {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(255,255,255,.15) 60deg,
+      transparent 120deg,
+      transparent 360deg
+    );
+    animation: rotateShine 8s linear infinite;
+    z-index: 3;
+    pointer-events: none;
+  }
+  @keyframes rotateShine {
+    to { transform: rotate(360deg); }
+  }
+  .ep-card.active .ep-art::after {
+    animation-duration: 4s;
+  }
+  /* Floating icon */
+  .ep-art .icon-big {
+    animation: floatIcon 4s ease-in-out infinite;
+  }
+  @keyframes floatIcon {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
   }
   .ep-art .bg{position:absolute; inset:0; background: linear-gradient(135deg, var(--c1), var(--c2))}
   .ep-art .grid-lines{
@@ -146,7 +271,7 @@
     filter: drop-shadow(0 4px 12px rgba(0,0,0,.18));
   }
   .ep-art svg{z-index: 2; opacity: .95}
- 
+
   .ep-meta{display:flex; gap: 8px; align-items:center; margin-bottom: 10px; flex-wrap: wrap}
   .tag{
     background: var(--tag-bg);
@@ -186,9 +311,34 @@
     display:flex; align-items:center; justify-content:center;
     border: none;
     cursor: pointer;
-    transition: background .15s, transform .15s;
+    transition: background .15s, transform .15s, box-shadow .3s;
+    position: relative;
+    z-index: 2;
   }
-  .play-mini:hover{background: var(--blue-deep); transform: scale(1.06)}
+  .play-mini::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: var(--blue);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity .3s, transform .3s;
+  }
+  .play-mini:hover{
+    background: var(--blue-deep);
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(0, 81, 142, .6);
+  }
+  .play-mini:hover::before {
+    opacity: .3;
+    transform: scale(1.4);
+    animation: pulseRing 1.5s ease-out infinite;
+  }
+  @keyframes pulseRing {
+    0% { opacity: .4; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.6); }
+  }
   .play-mini svg{width: 12px; height: 12px; margin-left: 2px}
   .play-mini.pause svg{margin-left: 0}
   .ep-foot .wave-indicator{
@@ -207,49 +357,160 @@
     0%,100%{height: 4px}
     50%{height: 14px}
   }
- 
+
   /* --- Full player bar --- */
   .player{
     margin-top: 0;
     margin-bottom: 32px;
-    background: linear-gradient(135deg, #002b4d 0%, #0c1220 100%);
+    background: linear-gradient(135deg, #002b4d 0%, #0c1220 50%, #1a0826 100%);
     border-radius: 18px;
     padding: 24px 28px;
     color: white;
     position: relative;
     overflow: hidden;
+    border: 1px solid rgba(0, 200, 255, .25);
+    box-shadow:
+      0 0 30px rgba(0, 81, 142, .35),
+      0 0 60px rgba(217, 70, 239, .15),
+      inset 0 0 40px rgba(0, 81, 142, .15);
   }
   .player::before{
     content:'';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(circle at 80% 20%, rgba(0, 81, 142, .45), transparent 40%),
-      radial-gradient(circle at 10% 90%, rgba(74, 125, 181, .25), transparent 40%);
+      radial-gradient(circle at 80% 20%, rgba(0, 200, 255, .35), transparent 40%),
+      radial-gradient(circle at 15% 85%, rgba(217, 70, 239, .35), transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(0, 81, 142, .2), transparent 60%);
     pointer-events:none;
+    animation: shiftGlow 6s ease-in-out infinite;
+  }
+  @keyframes shiftGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .75; transform: scale(1.05); }
+  }
+  /* Neon edge sweep */
+  .player::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    padding: 1px;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      rgba(0, 200, 255, .6) 25%,
+      rgba(217, 70, 239, .6) 50%,
+      rgba(0, 200, 255, .6) 75%,
+      transparent 100%
+    );
+    background-size: 300% 100%;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    animation: neonSweep 4s linear infinite;
+  }
+  @keyframes neonSweep {
+    0% { background-position: 200% 0; }
+    100% { background-position: -100% 0; }
+  }
+  /* Twinkling stars in player */
+  .player-stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 4px white, 0 0 8px rgba(0, 200, 255, .8);
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  .star.magenta {
+    box-shadow: 0 0 4px #ffb3ff, 0 0 10px rgba(217, 70, 239, .9);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: .2; transform: scale(.8); }
+    50% { opacity: 1; transform: scale(1.4); }
   }
   .player-inner{position:relative; display:grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center}
   .player-art{
     width: 72px; height: 72px;
     border-radius: 12px;
     overflow: hidden;
-    background: linear-gradient(135deg, #00518E, #4a7db5);
+    background: linear-gradient(135deg, #00518E 0%, #4a7db5 50%, #d946ef 100%);
     display:flex; align-items:center; justify-content:center;
     flex-shrink: 0;
+    position: relative;
+    box-shadow:
+      0 0 20px rgba(0, 200, 255, .55),
+      0 0 40px rgba(217, 70, 239, .35);
+    animation: artGlow 3s ease-in-out infinite;
   }
-  .player-art svg{width: 44px; height: 44px; color: white}
+  @keyframes artGlow {
+    0%, 100% {
+      box-shadow:
+        0 0 20px rgba(0, 200, 255, .55),
+        0 0 40px rgba(217, 70, 239, .35);
+    }
+    50% {
+      box-shadow:
+        0 0 30px rgba(217, 70, 239, .65),
+        0 0 50px rgba(0, 200, 255, .45);
+    }
+  }
+  .player-art::after {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(255,255,255,.4) 60deg,
+      transparent 120deg,
+      transparent 360deg
+    );
+    animation: rotateShine 6s linear infinite;
+  }
+  .player-art svg{width: 44px; height: 44px; color: white; position: relative; z-index: 1}
   .player-mid{min-width: 0}
   .player-tag{
     display:inline-block;
-    background: rgba(74, 125, 181, .3);
-    color: #b8d4ec;
+    background: linear-gradient(90deg, rgba(217, 70, 239, .35), rgba(0, 200, 255, .35));
+    color: #f8d8ff;
     padding: 3px 9px; border-radius: 4px;
     font-size: 10px; font-weight: 700; letter-spacing: .12em;
     margin-bottom: 6px;
+    border: 1px solid rgba(217, 70, 239, .4);
+    box-shadow: 0 0 10px rgba(217, 70, 239, .35);
   }
   .player-title{
     font-size: 17px; font-weight: 700; letter-spacing: -.01em;
     margin-bottom: 10px;
+    color: #fff;
+    text-shadow:
+      0 0 8px rgba(0, 200, 255, .6),
+      0 0 18px rgba(0, 200, 255, .3);
+    animation: neonFlicker 4s ease-in-out infinite;
+  }
+  @keyframes neonFlicker {
+    0%, 100% {
+      text-shadow:
+        0 0 8px rgba(0, 200, 255, .6),
+        0 0 18px rgba(0, 200, 255, .3);
+    }
+    50% {
+      text-shadow:
+        0 0 12px rgba(0, 200, 255, .85),
+        0 0 24px rgba(0, 200, 255, .5),
+        0 0 36px rgba(217, 70, 239, .25);
+    }
   }
   .waveform{
     display:flex; align-items: center; gap: 2px;
@@ -261,10 +522,16 @@
     flex: 1;
     background: rgba(255,255,255,.25);
     border-radius: 1px;
-    transition: background .2s;
+    transition: background .2s, box-shadow .2s;
   }
-  .waveform .bar.played{background: var(--blue-mid)}
-  .waveform .bar.current{background: white}
+  .waveform .bar.played{
+    background: linear-gradient(180deg, #00c8ff, #d946ef);
+    box-shadow: 0 0 4px rgba(0, 200, 255, .6);
+  }
+  .waveform .bar.current{
+    background: #fff;
+    box-shadow: 0 0 8px rgba(0, 200, 255, .9), 0 0 16px rgba(217, 70, 239, .5);
+  }
   .time-row{
     display:flex; justify-content: space-between;
     font-size: 11px; color: rgba(255,255,255,.55);
@@ -285,13 +552,33 @@
   .ctrl svg{width: 14px; height: 14px}
   .ctrl.play{
     width: 56px; height: 56px;
-    background: var(--blue);
+    background: linear-gradient(135deg, #00518E 0%, #00c8ff 100%);
     color: white;
+    position: relative;
+    box-shadow:
+      0 0 0 0 rgba(0, 200, 255, .7),
+      0 0 20px rgba(0, 200, 255, .5);
+    animation: playPulse 2s ease-in-out infinite;
   }
-  .ctrl.play:hover{background: #2d7bbf}
+  @keyframes playPulse {
+    0%, 100% {
+      box-shadow:
+        0 0 0 0 rgba(0, 200, 255, .7),
+        0 0 20px rgba(0, 200, 255, .5);
+    }
+    50% {
+      box-shadow:
+        0 0 0 14px rgba(217, 70, 239, 0),
+        0 0 30px rgba(217, 70, 239, .55);
+    }
+  }
+  .ctrl.play:hover{
+    background: linear-gradient(135deg, #d946ef 0%, #00c8ff 100%);
+    transform: scale(1.08);
+  }
   .ctrl.play svg{width: 18px; height: 18px; margin-left: 2px}
   .ctrl.play.is-playing svg{margin-left: 0}
- 
+
   @media (max-width: 900px){
     .shell{padding: 0 24px}
     .player-inner{grid-template-columns: auto 1fr; }
@@ -300,9 +587,9 @@
 </style>
 </head>
 <body>
- 
+
 <div class="shell">
- 
+
   <!-- MONTHLY EPISODES -->
   <section class="section" id="episodes">
     <div class="section-head">
@@ -316,9 +603,10 @@
         <span style="opacity:.7">4 of 12 in the season</span>
       </div>
     </div>
- 
+
     <!-- FULL PLAYER -->
     <div class="player" id="player">
+      <div class="player-stars" id="playerStars"></div>
       <div class="player-inner">
         <div class="player-art">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8"></path></svg>
@@ -338,12 +626,12 @@
         </div>
       </div>
     </div>
- 
+
     <div class="ep-grid" id="epGrid"></div>
   </section>
- 
+
 </div>
- 
+
 <script>
   // --- Episode data ---
   const EPISODES = [
@@ -385,7 +673,7 @@
       active: true
     }
   ];
- 
+
   // Icon library
   const ICONS = {
     ai: `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="18" width="36" height="30" rx="6"/><circle cx="24" cy="32" r="2.5" fill="white"/><circle cx="40" cy="32" r="2.5" fill="white"/><path d="M28 40h8"/><path d="M32 10v8M20 10l4 6M44 10l-4 6"/></svg>`,
@@ -393,7 +681,7 @@
     net: `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="4" fill="white"/><circle cx="14" cy="16" r="3.5" fill="white"/><circle cx="50" cy="16" r="3.5" fill="white"/><circle cx="14" cy="48" r="3.5" fill="white"/><circle cx="50" cy="48" r="3.5" fill="white"/><path d="M32 32L14 16M32 32L50 16M32 32L14 48M32 32L50 48"/></svg>`,
     spark: `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 10L36 26L52 30L36 34L32 50L28 34L12 30L28 26Z" fill="white" fill-opacity=".15"/><circle cx="48" cy="48" r="2" fill="white"/><circle cx="16" cy="46" r="1.5" fill="white"/></svg>`
   };
- 
+
   // --- Render cards ---
   const grid = document.getElementById('epGrid');
   grid.innerHTML = EPISODES.map((e, i) => `
@@ -421,7 +709,7 @@
       </div>
     </article>
   `).join('');
- 
+
   // --- Build waveform ---
   const BAR_COUNT = 84;
   const wfEl = document.getElementById('waveform');
@@ -433,19 +721,19 @@
     const h = seedHeight(i);
     return `<div class="bar" style="height:${(h * 100).toFixed(0)}%"></div>`;
   }).join('');
- 
+
   // --- Player state ---
   const TOTAL_SECONDS = 42 * 60 + 17;
   let current = TOTAL_SECONDS * 0.28;
   let playing = false;
   let tickHandle = null;
- 
+
   const playBtn = document.getElementById('playBtn');
   const playIcon = document.getElementById('playIcon');
   const curTimeEl = document.getElementById('curTime');
   const totTimeEl = document.getElementById('totTime');
   const bars = wfEl.querySelectorAll('.bar');
- 
+
   const fmt = s => {
     s = Math.max(0, Math.floor(s));
     const m = Math.floor(s / 60);
@@ -453,7 +741,7 @@
     return `${String(m).padStart(2,'0')}:${sec}`;
   };
   totTimeEl.textContent = fmt(TOTAL_SECONDS);
- 
+
   function renderWave(){
     const pos = current / TOTAL_SECONDS;
     const curIdx = Math.floor(pos * BAR_COUNT);
@@ -463,7 +751,7 @@
     });
     curTimeEl.textContent = fmt(current);
   }
- 
+
   function setPlaying(p){
     playing = p;
     playBtn.classList.toggle('is-playing', p);
@@ -480,16 +768,28 @@
     }
   }
   playBtn.addEventListener('click', () => setPlaying(!playing));
- 
+
   wfEl.addEventListener('click', (e) => {
     const rect = wfEl.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
     current = Math.max(0, Math.min(1, pct)) * TOTAL_SECONDS;
     renderWave();
   });
- 
+
   renderWave();
- 
+
+  // === Twinkling stars in player ===
+  const starsContainer = document.getElementById('playerStars');
+  for (let i = 0; i < 30; i++) {
+    const star = document.createElement('div');
+    star.className = 'star' + (Math.random() > 0.6 ? ' magenta' : '');
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = (Math.random() * 3) + 's';
+    star.style.animationDuration = (2 + Math.random() * 2) + 's';
+    starsContainer.appendChild(star);
+  }
+
   // --- Card → player wiring ---
   document.querySelectorAll('.ep-card').forEach(card => {
     card.addEventListener('click', () => {
