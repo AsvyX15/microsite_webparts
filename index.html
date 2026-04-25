@@ -16,17 +16,17 @@
     --ink-soft: #3a4257;
     --muted: #6b7388;
     --line: #e4eaee;
-
+ 
     /* Blue palette derived from #00518E */
     --blue-light: #a8c8e8;
     --blue-mid: #4a7db5;
     --blue: #00518E;          /* primary brand */
     --blue-deep: #003d6b;
     --blue-ink: #002b4d;
-
+ 
     --tag-bg: #e6f0fa;
     --tag-ink: #003d6b;
-
+ 
     --shadow: 0 1px 2px rgba(12,18,32,.04), 0 12px 32px -12px rgba(0, 81, 142, .22);
   }
   *{box-sizing:border-box}
@@ -40,7 +40,7 @@
   }
   a{color: inherit; text-decoration: none}
   img{max-width: 100%; display:block}
-
+ 
   .shell{
     max-width: 1200px;
     margin: 0 auto;
@@ -48,7 +48,7 @@
     position: relative;
     z-index: 1;
   }
-
+ 
   /* Section headers */
   .section{padding: 64px 0 40px}
   .section-head{
@@ -73,7 +73,7 @@
     letter-spacing: .06em;
   }
   .season-pill::before{content:''; width:6px; height:6px; background: var(--blue); border-radius: 50%}
-
+ 
   /* Episode grid */
   .ep-grid{
     display: grid;
@@ -146,7 +146,7 @@
     filter: drop-shadow(0 4px 12px rgba(0,0,0,.18));
   }
   .ep-art svg{z-index: 2; opacity: .95}
-
+ 
   .ep-meta{display:flex; gap: 8px; align-items:center; margin-bottom: 10px; flex-wrap: wrap}
   .tag{
     background: var(--tag-bg);
@@ -207,7 +207,7 @@
     0%,100%{height: 4px}
     50%{height: 14px}
   }
-
+ 
   /* --- Full player bar --- */
   .player{
     margin-top: 0;
@@ -291,7 +291,7 @@
   .ctrl.play:hover{background: #2d7bbf}
   .ctrl.play svg{width: 18px; height: 18px; margin-left: 2px}
   .ctrl.play.is-playing svg{margin-left: 0}
-
+ 
   @media (max-width: 900px){
     .shell{padding: 0 24px}
     .player-inner{grid-template-columns: auto 1fr; }
@@ -300,9 +300,9 @@
 </style>
 </head>
 <body>
-
+ 
 <div class="shell">
-
+ 
   <!-- MONTHLY EPISODES -->
   <section class="section" id="episodes">
     <div class="section-head">
@@ -316,7 +316,7 @@
         <span style="opacity:.7">4 of 12 in the season</span>
       </div>
     </div>
-
+ 
     <!-- FULL PLAYER -->
     <div class="player" id="player">
       <div class="player-inner">
@@ -338,12 +338,12 @@
         </div>
       </div>
     </div>
-
+ 
     <div class="ep-grid" id="epGrid"></div>
   </section>
-
+ 
 </div>
-
+ 
 <script>
   // --- Episode data ---
   const EPISODES = [
@@ -385,7 +385,7 @@
       active: true
     }
   ];
-
+ 
   // Icon library
   const ICONS = {
     ai: `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="18" width="36" height="30" rx="6"/><circle cx="24" cy="32" r="2.5" fill="white"/><circle cx="40" cy="32" r="2.5" fill="white"/><path d="M28 40h8"/><path d="M32 10v8M20 10l4 6M44 10l-4 6"/></svg>`,
@@ -393,7 +393,7 @@
     net: `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="4" fill="white"/><circle cx="14" cy="16" r="3.5" fill="white"/><circle cx="50" cy="16" r="3.5" fill="white"/><circle cx="14" cy="48" r="3.5" fill="white"/><circle cx="50" cy="48" r="3.5" fill="white"/><path d="M32 32L14 16M32 32L50 16M32 32L14 48M32 32L50 48"/></svg>`,
     spark: `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 10L36 26L52 30L36 34L32 50L28 34L12 30L28 26Z" fill="white" fill-opacity=".15"/><circle cx="48" cy="48" r="2" fill="white"/><circle cx="16" cy="46" r="1.5" fill="white"/></svg>`
   };
-
+ 
   // --- Render cards ---
   const grid = document.getElementById('epGrid');
   grid.innerHTML = EPISODES.map((e, i) => `
@@ -421,7 +421,7 @@
       </div>
     </article>
   `).join('');
-
+ 
   // --- Build waveform ---
   const BAR_COUNT = 84;
   const wfEl = document.getElementById('waveform');
@@ -433,19 +433,19 @@
     const h = seedHeight(i);
     return `<div class="bar" style="height:${(h * 100).toFixed(0)}%"></div>`;
   }).join('');
-
+ 
   // --- Player state ---
   const TOTAL_SECONDS = 42 * 60 + 17;
   let current = TOTAL_SECONDS * 0.28;
   let playing = false;
   let tickHandle = null;
-
+ 
   const playBtn = document.getElementById('playBtn');
   const playIcon = document.getElementById('playIcon');
   const curTimeEl = document.getElementById('curTime');
   const totTimeEl = document.getElementById('totTime');
   const bars = wfEl.querySelectorAll('.bar');
-
+ 
   const fmt = s => {
     s = Math.max(0, Math.floor(s));
     const m = Math.floor(s / 60);
@@ -453,7 +453,7 @@
     return `${String(m).padStart(2,'0')}:${sec}`;
   };
   totTimeEl.textContent = fmt(TOTAL_SECONDS);
-
+ 
   function renderWave(){
     const pos = current / TOTAL_SECONDS;
     const curIdx = Math.floor(pos * BAR_COUNT);
@@ -463,7 +463,7 @@
     });
     curTimeEl.textContent = fmt(current);
   }
-
+ 
   function setPlaying(p){
     playing = p;
     playBtn.classList.toggle('is-playing', p);
@@ -480,16 +480,16 @@
     }
   }
   playBtn.addEventListener('click', () => setPlaying(!playing));
-
+ 
   wfEl.addEventListener('click', (e) => {
     const rect = wfEl.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
     current = Math.max(0, Math.min(1, pct)) * TOTAL_SECONDS;
     renderWave();
   });
-
+ 
   renderWave();
-
+ 
   // --- Card → player wiring ---
   document.querySelectorAll('.ep-card').forEach(card => {
     card.addEventListener('click', () => {
