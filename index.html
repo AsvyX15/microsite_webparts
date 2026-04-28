@@ -589,7 +589,7 @@
 <body>
 
 <div class="shell">
-
+<audio id="audioPlayer"></audio>
   <!-- MONTHLY EPISODES -->
   <section class="section" id="episodes">
     <div class="section-head">
@@ -615,7 +615,7 @@
           <div class="player-tag" id="playerTag">APRIL · NOW PLAYING</div>
           <div class="player-title" id="playerTitle">Agentic AI at Work: From Copilots to Colleagues</div>
           <div class="waveform" id="waveform"></div>
-          <div class="time-row"><span id="curTime">11:50</span><span id="totTime">42:17</span></div>
+          <div class="time-row"><span id="curTime">11:50</span><span id="totTime">05:03</span></div>
         </div>
         <div class="player-right">
           <button class="ctrl" aria-label="previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5v14h2V5H6zm12 0L8 12l10 7V5z"></path></svg></button>
@@ -640,9 +640,10 @@
       title: 'Generative AI, One Year Later',
       desc: 'Where the hype settled, what actually shipped, and what regulators need to notice next.',
       tag: 'AI · Policy',
-      duration: '36:42',
+      duration: '05:03',
       c1: '#00518E', c2: '#002b4d',
-      icon: 'ai'
+      icon: 'ai',
+      audio: "https://asyasuguru.github.io/PODCASTPAGE/audio/EPISODE 1.m4a"
     },
     {
       month: 'FEB', monthFull: 'February', num: '02',
@@ -651,7 +652,8 @@
       tag: 'Quantum',
       duration: '44:08',
       c1: '#4a7db5', c2: '#00518E',
-      icon: 'q'
+      icon: 'q',
+      audio: "https://asvyx15.github.io/Podcast/audio/EPISODE 1.m4a"
     },
     {
       month: 'MAR', monthFull: 'March', num: '03',
@@ -660,7 +662,8 @@
       tag: 'Infrastructure',
       duration: '29:55',
       c1: '#2d7bbf', c2: '#003d6b',
-      icon: 'net'
+      icon: 'net',
+      audio: "https://asyasuguru.github.io/PODCASTPAGE/audio/EPISODE 1.m4a"
     },
     {
       month: 'APR', monthFull: 'April', num: '04',
@@ -670,10 +673,33 @@
       duration: '42:17',
       c1: '#a8c8e8', c2: '#00518E',
       icon: 'spark',
+      audio: "https://asyasuguru.github.io/PODCASTPAGE/audio/EPISODE 1.m4a",
       active: true
     }
   ];
+  EPISODES.forEach((ep, index) => {
+  if (!ep.audio) return;
 
+  const tempAudio = new Audio(ep.audio);
+
+  tempAudio.addEventListener('loadedmetadata', () => {
+    const duration = tempAudio.duration;
+
+    // format time
+    const m = Math.floor(duration / 60);
+    const s = Math.floor(duration % 60).toString().padStart(2, '0');
+
+    const formatted = `${m}:${s}`;
+
+    // update data
+    EPISODES[index].duration = formatted;
+
+    // update UI (cards already rendered)
+    const card = document.querySelector(`.ep-card[data-idx="${index}"] .dur`);
+    if (card) card.textContent = formatted;
+  });
+});
+const audio = document.getElementById('audioPlayer');
   // Icon library
   const ICONS = {
     ai: `<svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="18" width="36" height="30" rx="6"/><circle cx="24" cy="32" r="2.5" fill="white"/><circle cx="40" cy="32" r="2.5" fill="white"/><path d="M28 40h8"/><path d="M32 10v8M20 10l4 6M44 10l-4 6"/></svg>`,
@@ -723,7 +749,7 @@
   }).join('');
 
   // --- Player state ---
-  const TOTAL_SECONDS = 42 * 60 + 17;
+  let TOTAL_SECONDS = 42 * 60 + 17;
   let current = TOTAL_SECONDS * 0.28;
   let playing = false;
   let tickHandle = null;
@@ -741,7 +767,17 @@
     return `${String(m).padStart(2,'0')}:${sec}`;
   };
   totTimeEl.textContent = fmt(TOTAL_SECONDS);
+audio.addEventListener('timeupdate', () => {
+  current = audio.currentTime;
+  renderWave();
+});
 
+audio.addEventListener('loadedmetadata', () => {
+  TOTAL_SECONDS = audio.duration;
+
+  // update full player total time
+  totTimeEl.textContent = fmt(TOTAL_SECONDS);
+});
   function renderWave(){
     const pos = current / TOTAL_SECONDS;
     const curIdx = Math.floor(pos * BAR_COUNT);
@@ -752,21 +788,20 @@
     curTimeEl.textContent = fmt(current);
   }
 
-  function setPlaying(p){
-    playing = p;
-    playBtn.classList.toggle('is-playing', p);
-    playIcon.innerHTML = p
-      ? `<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>`
-      : `<path d="M8 5v14l11-7z"/>`;
-    if(p && !tickHandle){
-      tickHandle = setInterval(() => {
-        current = (current + 1) % (TOTAL_SECONDS + 1);
-        renderWave();
-      }, 1000);
-    } else if (!p && tickHandle){
-      clearInterval(tickHandle); tickHandle = null;
-    }
+function setPlaying(p){
+  if(p){
+    audio.play();
+  } else {
+    audio.pause();
   }
+
+  playing = p;
+  playBtn.classList.toggle('is-playing', p);
+
+  playIcon.innerHTML = p
+    ? '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>'
+    : '<path d="M8 5v14l11-7z"/>';
+}
   playBtn.addEventListener('click', () => setPlaying(!playing));
 
   wfEl.addEventListener('click', (e) => {
@@ -791,22 +826,29 @@
   }
 
   // --- Card → player wiring ---
-  document.querySelectorAll('.ep-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const idx = Number(card.dataset.idx);
-      const e = EPISODES[idx];
-      document.querySelectorAll('.ep-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      document.getElementById('playerTitle').textContent = e.title;
-      document.getElementById('playerTag').textContent = `${e.monthFull.toUpperCase()} · NOW PLAYING`;
-      const [mm, ss] = e.duration.split(':').map(Number);
-      const total = mm * 60 + ss;
-      totTimeEl.textContent = fmt(total);
-      current = 0;
-      renderWave();
-      setPlaying(true);
-    });
+document.querySelectorAll('.ep-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const idx = Number(card.dataset.idx);
+    const e = EPISODES[idx];
+
+    // SET AUDIO SOURCE
+    if (e.audio) {
+  audio.src = e.audio;
+  audio.currentTime = 0;
+  audio.play();
+  setPlaying(true);
+} else {
+  console.warn("No audio file for this episode");
+}
+
+    document.getElementById('playerTitle').textContent = e.title;
+    document.getElementById('playerTag').textContent =
+      `${e.monthFull.toUpperCase()} · NOW PLAYING`;
+    audio.play();
+
+    setPlaying(true);
   });
+});
 </script>
 </body>
 </html>
