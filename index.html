@@ -825,30 +825,79 @@ function setPlaying(p){
     starsContainer.appendChild(star);
   }
 
-  // --- Card → player wiring ---
+// --- Card → player wiring ---
+let activeIdx = EPISODES.findIndex(e => e.active); // track which card is active
+
+function setActiveCard(idx) {
+  // Remove active state from all cards
+  document.querySelectorAll('.ep-card').forEach((card, i) => {
+    const e = EPISODES[i];
+    card.classList.remove('active');
+
+    // Reset play button to ▶ play icon
+    const btn = card.querySelector('.play-mini');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+
+    // Remove wave indicator, restore "Listen →"
+    const foot = card.querySelector('.ep-foot');
+    const existingWave = foot.querySelector('.wave-indicator');
+    const existingListen = foot.querySelector('.listen-label');
+    if (existingWave) existingWave.remove();
+    if (!existingListen) {
+      const span = document.createElement('span');
+      span.className = 'dur listen-label';
+      span.style.cssText = 'color:var(--blue); font-weight:600';
+      span.textContent = 'Listen →';
+      foot.appendChild(span);
+    }
+  });
+
+  // Apply active state to selected card
+  const activeCard = document.querySelector(`.ep-card[data-idx="${idx}"]`);
+  activeCard.classList.add('active');
+
+  // Change its button to ⏸ pause icon
+  const btn = activeCard.querySelector('.play-mini');
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>`;
+
+  // Replace "Listen →" with wave indicator
+  const foot = activeCard.querySelector('.ep-foot');
+  const listenLabel = foot.querySelector('.listen-label');
+  if (listenLabel) listenLabel.remove();
+  if (!foot.querySelector('.wave-indicator')) {
+    const wave = document.createElement('div');
+    wave.className = 'wave-indicator';
+    wave.innerHTML = '<span></span><span></span><span></span><span></span><span></span>';
+    foot.appendChild(wave);
+  }
+
+  activeIdx = idx;
+}
+
 document.querySelectorAll('.ep-card').forEach(card => {
   card.addEventListener('click', () => {
     const idx = Number(card.dataset.idx);
     const e = EPISODES[idx];
 
-    // SET AUDIO SOURCE
     if (e.audio) {
-  audio.src = e.audio;
-  audio.currentTime = 0;
-  audio.play();
-  setPlaying(true);
-} else {
-  console.warn("No audio file for this episode");
-}
+      audio.src = e.audio;
+      audio.currentTime = 0;
+      audio.play();
+      setPlaying(true);
+    } else {
+      console.warn("No audio file for this episode");
+    }
 
     document.getElementById('playerTitle').textContent = e.title;
     document.getElementById('playerTag').textContent =
       `${e.monthFull.toUpperCase()} · NOW PLAYING`;
-    audio.play();
 
-    setPlaying(true);
+    setActiveCard(idx);
   });
 });
+
+// Initialize the default active card visually
+setActiveCard(activeIdx);
 </script>
 </body>
 </html>
